@@ -53,6 +53,7 @@ router.put(
   "/product/update/:slug",
   upload.fields([
     { name: "mediaFiles", maxCount: 5 },
+    { name: "colorFiles", maxCount: 5 },
     { name: "imageFile", maxCount: 1 },
     { name: "pdf", maxCount: 1 },
     { name: "video", maxCount: 1 },

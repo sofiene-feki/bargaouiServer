@@ -135,6 +135,27 @@ exports.update = async (req, res) => {
       }));
     }
 
+    // -------------------------
+    // Handle colors update with files
+    // -------------------------
+    if (Array.isArray(body.colors)) {
+      body.colors.forEach((color, i) => {
+        // If file uploaded for this color, update src
+        if (files?.colorFiles && files.colorFiles[i]) {
+          color.src = `/uploads/media/${files.colorFiles[i].filename}`;
+        } else if (color._id) {
+          // If color existed before and no new file uploaded, preserve its existing src
+          const oldColor = existing.colors.find(
+            (c) => c._id.toString() === color._id
+          );
+          if (oldColor) color.src = oldColor.src;
+        }
+      });
+    }
+
+    // -------------------------
+    // Handle media (images & videos)
+    // -------------------------
     let updatedMedia = (existing.media || []).filter((m) =>
       body.existingMediaIds.includes(m._id.toString())
     );
@@ -143,10 +164,11 @@ exports.update = async (req, res) => {
       (m) => !body.existingMediaIds.includes(m._id.toString())
     );
 
+    // Delete removed media files from disk
     for (let m of mediaToDelete) {
       if (m.src) {
         console.log("🗑️ Deleting media file:", m.src);
-        await deleteFile(m.src); // implement deleteFile to remove file from disk
+        await deleteFile(m.src); // Implement deleteFile function
       }
     }
 
@@ -157,13 +179,13 @@ exports.update = async (req, res) => {
         type: f.mimetype.startsWith("image") ? "image" : "video",
         alt: f.originalname,
       }));
-      console.log("🆕 New media to append:", newMedia);
       updatedMedia.push(...newMedia);
     }
 
     body.media = updatedMedia;
     console.log("✅ Final media array to save:", updatedMedia);
 
+    // If title changed, update slug
     if (body.Title) body.slug = slugify(body.Title);
 
     // -------------------------
