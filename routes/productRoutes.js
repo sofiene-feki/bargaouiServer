@@ -39,11 +39,11 @@ const upload = multer({ storage });
 router.post(
   "/product/create",
   upload.fields([
-    { name: "mediaFiles", maxCount: 5 },
-    { name: "colorFiles", maxCount: 5 },
-    { name: "imageFile", maxCount: 1 },
-    { name: "pdf", maxCount: 1 },
-    { name: "video", maxCount: 1 },
+    { name: "mediaFiles", maxCount: 20 },
+    { name: "colorFiles", maxCount: 20 },
+    { name: "imageFile", maxCount: 20 },
+    { name: "pdf", maxCount: 20 },
+    { name: "video", maxCount: 20 },
   ]),
   create
 );
@@ -52,11 +52,11 @@ router.post(
 router.put(
   "/product/update/:slug",
   upload.fields([
-    { name: "mediaFiles", maxCount: 5 },
-    { name: "colorFiles", maxCount: 5 },
-    { name: "imageFile", maxCount: 1 },
-    { name: "pdf", maxCount: 1 },
-    { name: "video", maxCount: 1 },
+    { name: "mediaFiles", maxCount: 20 },
+    { name: "colorFiles", maxCount: 20 },
+    { name: "imageFile", maxCount: 20 },
+    { name: "pdf", maxCount: 20 },
+    { name: "video", maxCount: 20 },
   ]),
   update
 );
