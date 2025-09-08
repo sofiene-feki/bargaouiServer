@@ -280,30 +280,37 @@ exports.list = async (req, res) => {
   }
 };
 
+// GET /api/products/category/:Category
+// GET /api/products/category/:category
 exports.getProductsByCategory = async (req, res) => {
   try {
-    const { category } = req.params;
+    const categoryParam = req.params.category; // lowercase param
     const page = parseInt(req.query.page) || 0;
     const itemsPerPage = parseInt(req.query.itemsPerPage) || 12;
-    const sortOption = req.query.sort || "createdAt";
+    const sortOption =
+      req.query.sort === "default" ? "createdAt" : req.query.sort;
 
-    // Count total products
-    const total = await Product.countDocuments({
-      Category: category,
-    });
+    // Case-insensitive exact match
+    const filter = { Category: new RegExp(`^${categoryParam.trim()}$`, "i") };
 
-    // Fetch products with pagination & sort
-    const products = await Product.find({ Category: category })
+    const total = await Product.countDocuments(filter);
+
+    const products = await Product.find(filter)
       .sort({ [sortOption]: 1 })
       .skip(page * itemsPerPage)
       .limit(itemsPerPage);
 
     const totalPages = Math.ceil(total / itemsPerPage);
 
-    res.json({ products, total, totalPages, currentPage: page });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error", error });
+    res.json({
+      products,
+      total,
+      totalPages,
+      currentPage: page,
+    });
+  } catch (err) {
+    console.error("❌ Error fetching products by category:", err);
+    res.status(500).json({ message: "Server error", error: err });
   }
 };
 
@@ -349,7 +356,11 @@ exports.search = async (req, res) => {
     const searchRegex = new RegExp(query, "i");
 
     const filter = {
-      $or: [{ Title: searchRegex }, { Description: searchRegex }],
+      $or: [
+        { Title: searchRegex },
+        { Description: searchRegex },
+        { slug: searchRegex },
+      ],
     };
 
     const products = await Product.find(filter)

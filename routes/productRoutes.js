@@ -60,10 +60,11 @@ router.put(
   ]),
   update
 );
+router.get("/category/:category", getProductsByCategory);
+
 router.post("/products", list);
 router.get("/products/new-arrivals", getNewArrivals);
 router.get("/products/best-sellers", getBestSellers);
-router.get("/category/:category", getProductsByCategory);
 
 // DELETE
 router.delete("/product/:slug", remove);
