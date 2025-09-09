@@ -80,11 +80,11 @@ router.get("/specialOffre/:slug", getProductBySlug);
 
 // LIST
 
-console.log("✅ Product router loaded with routes:");
-router.stack.forEach((r) => {
-  if (r.route) {
-    console.log(Object.keys(r.route.methods), r.route.path);
-  }
-});
+// console.log("✅ Product router loaded with routes:");
+// router.stack.forEach((r) => {
+//   if (r.route) {
+//     console.log(Object.keys(r.route.methods), r.route.path);
+//   }
+// });
 
 module.exports = router;
