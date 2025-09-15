@@ -36,6 +36,23 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // routes
+
+// 1️⃣ Category routes (static/dynamic)
+router.get("/products/category/:category", getProductsByCategory);
+
+// 2️⃣ Listing routes
+router.post("/products", list);
+router.get("/products/new-arrivals", getNewArrivals);
+router.get("/products/best-sellers", getBestSellers);
+router.post("/products/search", search);
+
+// 3️⃣ Special product routes
+router.put("/product/specialOffre/:slug", setProductOfTheYear);
+router.get("/getProductOfTheYear", getProductOfTheYear);
+router.get("/titles", getAllProductTitles);
+router.get("/specialOffre/:slug", getProductBySlug);
+
+// 4️⃣ CRUD operations
 router.post(
   "/product/create",
   upload.fields([
@@ -48,7 +65,6 @@ router.post(
   create
 );
 
-// UPDATE (specific before slug)
 router.put(
   "/product/update/:slug",
   upload.fields([
@@ -60,31 +76,19 @@ router.put(
   ]),
   update
 );
-router.get("/category/:category", getProductsByCategory);
 
-router.post("/products", list);
-router.get("/products/new-arrivals", getNewArrivals);
-router.get("/products/best-sellers", getBestSellers);
-
-// DELETE
 router.delete("/product/:slug", remove);
 
-// READ (generic slug goes last!)
+// 5️⃣ Generic read route (last!)
 router.get("/product/:slug", read);
-router.post("/products/search", search);
-
-router.put("/product/specialOffre/:slug", setProductOfTheYear);
-router.get("/getProductOfTheYear", getProductOfTheYear); // ✅ new route
-router.get("/titles", getAllProductTitles);
-router.get("/specialOffre/:slug", getProductBySlug);
 
 // LIST
 
-// console.log("✅ Product router loaded with routes:");
-// router.stack.forEach((r) => {
-//   if (r.route) {
-//     console.log(Object.keys(r.route.methods), r.route.path);
-//   }
-// });
+console.log("✅ Product router loaded with routes:");
+router.stack.forEach((r) => {
+  if (r.route) {
+    console.log(Object.keys(r.route.methods), r.route.path);
+  }
+});
 
 module.exports = router;

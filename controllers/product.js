@@ -282,31 +282,30 @@ exports.list = async (req, res) => {
 
 // GET /api/products/category/:Category
 // GET /api/products/category/:category
+// controllers/productController.js
+
 exports.getProductsByCategory = async (req, res) => {
   try {
-    const categoryParam = req.params.category; // lowercase param
-    const page = parseInt(req.query.page) || 0;
-    const itemsPerPage = parseInt(req.query.itemsPerPage) || 12;
-    const sortOption =
-      req.query.sort === "default" ? "createdAt" : req.query.sort;
+    const categoryParam = req.params.category?.trim();
+    if (!categoryParam) {
+      return res.status(400).json({ message: "Category is required" });
+    }
 
-    // Case-insensitive exact match
-    const filter = { Category: new RegExp(`^${categoryParam.trim()}$`, "i") };
+    // Case-insensitive regex to match the DB Category field
+    const filter = {
+      Category: { $regex: `^${categoryParam}$`, $options: "i" },
+    };
 
-    const total = await Product.countDocuments(filter);
+    console.log("Filter used:", filter);
 
-    const products = await Product.find(filter)
-      .sort({ [sortOption]: 1 })
-      .skip(page * itemsPerPage)
-      .limit(itemsPerPage);
+    // Fetch all matching products
+    const products = await Product.find(filter);
 
-    const totalPages = Math.ceil(total / itemsPerPage);
+    console.log(`Products found for "${categoryParam}":`, products.length);
 
     res.json({
       products,
-      total,
-      totalPages,
-      currentPage: page,
+      total: products.length,
     });
   } catch (err) {
     console.error("❌ Error fetching products by category:", err);
