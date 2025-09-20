@@ -42,7 +42,7 @@ router.get("/products/category/:category", getProductsByCategory);
 
 // 2️⃣ Listing routes
 router.post("/products", list);
-router.get("/products/new-arrivals", getNewArrivals);
+router.get("/products/new-arrivals/:filter", getNewArrivals);
 router.get("/products/best-sellers", getBestSellers);
 router.post("/products/search", search);
 

@@ -314,9 +314,16 @@ exports.getProductsByCategory = async (req, res) => {
 };
 
 exports.getNewArrivals = async (req, res) => {
+  const { filter } = req.params; // ✅ extract category from params
+
   try {
-    // Fetch latest 5 products
-    const products = await Product.find({})
+    const query =
+      filter && filter !== "all"
+        ? { Category: filter } // match only the given category
+        : {}; // if no category or "all", return from all categories
+
+    // Fetch latest 4 products in this category
+    const products = await Product.find(query)
       .sort({ updatedAt: -1 }) // newest first
       .limit(4);
 
