@@ -1,4 +1,5 @@
 const Order = require("../models/Order");
+const axios = require("axios");
 
 // ✅ Create Order
 exports.createOrder = async (req, res) => {
@@ -90,5 +91,41 @@ exports.updateOrderStatus = async (req, res) => {
   } catch (error) {
     console.error("❌ Error updating order status:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.sendToDelivery = async (req, res) => {
+  try {
+    const orders = req.body; // expecting array of { Client, Produit }
+
+    if (!orders || !Array.isArray(orders) || orders.length === 0) {
+      return res.status(400).json({ message: "No orders provided" });
+    }
+
+    const response = await axios.post(
+      "https://www.firstdeliverygroup.com/api/v2/bulk-create",
+      orders,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.DELIVERY_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    res.status(200).json({
+      message: "Orders sent to delivery successfully",
+      data: response.data,
+    });
+  } catch (error) {
+    console.error(
+      "❌ Error sending orders to delivery:",
+      error.response?.data || error.message
+    );
+
+    res.status(500).json({
+      message: "Failed to send orders to delivery",
+      error: error.response?.data || error.message,
+    });
   }
 };

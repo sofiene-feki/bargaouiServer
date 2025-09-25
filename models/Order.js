@@ -7,6 +7,7 @@ const orderSchema = new mongoose.Schema(
       fullName: { type: String, required: true },
       phone: { type: String, required: true },
       address: { type: String, required: true },
+      gouvernorat: { type: String, required: true },
     },
     items: [
       {
