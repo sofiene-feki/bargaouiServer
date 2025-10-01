@@ -9,6 +9,7 @@ const orderSchema = new mongoose.Schema(
       address: { type: String, required: true },
       gouvernorat: { type: String, required: true },
     },
+
     items: [
       {
         productId: {
@@ -22,8 +23,26 @@ const orderSchema = new mongoose.Schema(
         image: String,
         selectedSize: String,
         selectedColor: String,
+        type: { type: String, enum: ["single", "pack"], default: "single" },
+
+        // ✅ products array for when item is a "pack"
+        products: [
+          {
+            productId: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "Product",
+            },
+            name: String,
+            price: { type: Number, default: 0 },
+            quantity: { type: Number, default: 1 },
+            selectedSize: String,
+            selectedSizePrice: Number,
+            selectedColor: String,
+          },
+        ],
       },
     ],
+
     paymentMethod: { type: String, enum: ["cod", "card"], default: "cod" },
     shipping: { type: Number, default: 0 },
     subtotal: { type: Number, required: true },

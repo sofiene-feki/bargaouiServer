@@ -82,18 +82,32 @@ exports.getPack = async (req, res) => {
 // ✅ UPDATE
 exports.updatePack = async (req, res) => {
   try {
-    const { title, description, price, products } = req.body;
+    const { title, description, price } = req.body;
 
-    // collect media files (append if provided)
-    const media = req.files?.mediaFiles?.map((f) => f.path) || [];
+    // Parse products if it’s stringified
+    let products = req.body.products;
+    if (typeof products === "string") {
+      try {
+        products = JSON.parse(products);
+      } catch (e) {
+        return res.status(400).json({ error: "Invalid products format" });
+      }
+    }
 
-    const pack = await Pack.findByIdAndUpdate(
-      req.params.id,
+    const media =
+      req.files?.mediaFiles?.map((f) => ({
+        src: `/uploads/media/${f.filename}`,
+        type: f.mimetype.startsWith("image") ? "image" : "video",
+        alt: f.originalname,
+      })) || [];
+
+    const pack = await Pack.findOneAndUpdate(
+      { slug: req.params.slug },
       {
         title,
         description,
         price,
-        products,
+        products, // now it's a real array of ObjectIds
         ...(media.length > 0 && { $push: { media: { $each: media } } }),
       },
       { new: true }
@@ -101,10 +115,7 @@ exports.updatePack = async (req, res) => {
 
     if (!pack) return res.status(404).json({ error: "Pack not found" });
 
-    res.json({
-      message: "Pack updated successfully",
-      pack,
-    });
+    res.json({ message: "Pack updated successfully", pack });
   } catch (err) {
     console.error("❌ Error updating pack:", err.message);
     res.status(500).json({ error: "Server error" });

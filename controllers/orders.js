@@ -4,16 +4,51 @@ const axios = require("axios");
 // ✅ Create Order
 exports.createOrder = async (req, res) => {
   try {
-    const { customer, items, paymentMethod, shipping, subtotal, total } =
+    let { customer, items, paymentMethod, shipping, subtotal, total } =
       req.body;
+
+    // If items is coming as a string (FormData), parse it
+    if (typeof items === "string") {
+      try {
+        items = JSON.parse(items);
+      } catch (err) {
+        return res.status(400).json({ message: "Invalid items format" });
+      }
+    }
 
     if (!customer || !items || items.length === 0) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
+    // Normalize items so packs and singles are stored correctly
+    const normalizedItems = items.map((item) => ({
+      productId: item.productId,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity || 1,
+      image: item.image,
+      selectedSize: item.selectedSize || null,
+      selectedColor: item.selectedColor || null,
+      type: item.type || "single", // default to single
+
+      // If it's a pack, ensure nested products exist
+      products:
+        item.type === "pack" && Array.isArray(item.products)
+          ? item.products.map((p) => ({
+              productId: p.productId,
+              name: p.name,
+              price: p.price || 0,
+              quantity: p.quantity || 1,
+              selectedSize: p.selectedSize || null,
+              selectedSizePrice: p.selectedSizePrice || 0,
+              selectedColor: p.selectedColor || null,
+            }))
+          : [],
+    }));
+
     const newOrder = new Order({
       customer,
-      items,
+      items: normalizedItems,
       paymentMethod,
       shipping,
       subtotal,
@@ -21,12 +56,14 @@ exports.createOrder = async (req, res) => {
     });
 
     await newOrder.save();
-    res
-      .status(201)
-      .json({ message: "Order created successfully", order: newOrder });
+
+    res.status(201).json({
+      message: "Order created successfully",
+      order: newOrder,
+    });
   } catch (error) {
     console.error("❌ Error creating order:", error.message);
-    res.status(500).json({ message: error.message }); // ✅ Return only error.message
+    res.status(500).json({ message: error.message });
   }
 };
 
