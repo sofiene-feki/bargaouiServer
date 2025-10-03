@@ -8,6 +8,7 @@ const {
   getPack,
   updatePack,
   deletePack,
+  getPacksByCategory,
 } = require("../controllers/pack");
 
 // Multer storage (same as product setup)
@@ -32,6 +33,8 @@ router.post(
 );
 
 router.get("/packs", getPacks);
+router.post("/pack/category", getPacksByCategory);
+
 router.get("/pack/:slug", getPack);
 
 router.put(

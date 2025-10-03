@@ -3,7 +3,7 @@ const slugify = require("slugify"); // npm i slugify
 
 exports.createPack = async (req, res) => {
   try {
-    const { title, description, price, products } = req.body;
+    const { title, description, price, category, products } = req.body;
 
     if (!title || !price || !products || products.length === 0) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -34,6 +34,7 @@ exports.createPack = async (req, res) => {
       slug,
       description,
       price,
+      category,
       products: productIds,
       media,
     });
@@ -64,6 +65,40 @@ exports.getPacks = async (req, res) => {
   }
 };
 
+// controllers/packController.js
+
+exports.getPacksByCategory = async (req, res) => {
+  try {
+    const {
+      category,
+      page = 0,
+      itemsPerPage = 10,
+      sort = "-createdAt",
+    } = req.body;
+
+    // Pagination
+    const skip = page * itemsPerPage;
+
+    // Query packs by category
+    const packs = await Pack.find({ category })
+      .populate("products") // populate product details
+      .sort(sort)
+      .skip(skip)
+      .limit(itemsPerPage);
+
+    const totalPacks = await Pack.countDocuments({ category });
+
+    res.status(200).json({
+      packs,
+      totalPacks,
+      totalPages: Math.ceil(totalPacks / itemsPerPage),
+    });
+  } catch (err) {
+    console.error("❌ Error fetching packs by category:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 // ✅ READ ONE
 exports.getPack = async (req, res) => {
   try {
@@ -82,7 +117,7 @@ exports.getPack = async (req, res) => {
 // ✅ UPDATE
 exports.updatePack = async (req, res) => {
   try {
-    const { title, description, price } = req.body;
+    const { title, description, price, category } = req.body;
 
     // Parse products if it’s stringified
     let products = req.body.products;
@@ -106,6 +141,7 @@ exports.updatePack = async (req, res) => {
       {
         title,
         description,
+        category,
         price,
         products, // now it's a real array of ObjectIds
         ...(media.length > 0 && { $push: { media: { $each: media } } }),
